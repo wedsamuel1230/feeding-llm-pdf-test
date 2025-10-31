@@ -1,7 +1,19 @@
 """Integration test: Full RAG pipeline with mock Grok response."""
 import sys
-from utils.pdf_processor import chunk_pdf_text
-from utils.retrieval import simple_similarity_search, format_context_for_prompt, build_rag_prompt
+from pathlib import Path
+
+ROOT_DIR = Path(__file__).resolve().parents[1]
+if str(ROOT_DIR) not in sys.path:
+    sys.path.insert(0, str(ROOT_DIR))
+
+from src.core.pdf_processor import chunk_pdf_text
+from src.core.retrieval import (
+    simple_similarity_search,
+    format_context_for_prompt,
+    build_rag_prompt,
+)
+
+PDF_PATH = ROOT_DIR / "test-pdf.pdf"
 
 
 def test_full_rag_pipeline():
@@ -13,8 +25,7 @@ def test_full_rag_pipeline():
     
     # Step 1: Load PDF
     print("[1/5] Loading PDF and creating chunks...")
-    pdf_path = "test-pdf.pdf"
-    chunks = chunk_pdf_text(pdf_path, chunk_size=500, overlap=50)
+    chunks = chunk_pdf_text(PDF_PATH, chunk_size=500, overlap=50)
     print(f"      ✓ Loaded {len(chunks)} chunks")
     
     # Step 2: User query
@@ -26,12 +37,17 @@ def test_full_rag_pipeline():
     print(f"\n[3/5] Retrieving relevant PDF content...")
     retrieved = simple_similarity_search(user_query, chunks, top_k=3)
     print(f"      ✓ Retrieved {len(retrieved)} chunks with relevance scores:")
-    for chunk, score in retrieved:
+    for chunk in retrieved:
+        score = chunk.get('score', 0.0)
         print(f"         - Page {chunk['page']}, Chunk {chunk['chunk_id']}: {score:.3f} relevance")
     
     # Step 4: Format context
     print(f"\n[4/5] Formatting context for Grok...")
-    context_str, citations = format_context_for_prompt(retrieved)
+    context_str = format_context_for_prompt(retrieved)
+    citations = [
+        f"[{idx}] {chunk.get('pdf_name', 'Unknown')}, Page {chunk.get('page', '?')}"
+        for idx, chunk in enumerate(retrieved, start=1)
+    ]
     print(f"      ✓ Context formatted ({len(context_str)} chars)")
     print(f"      ✓ Generated {len(citations)} citations")
     

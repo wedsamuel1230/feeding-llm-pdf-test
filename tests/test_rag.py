@@ -1,7 +1,13 @@
 """Test script for RAG pipeline (without API call)."""
 import sys
-from utils.pdf_processor import chunk_pdf_text
-from utils.retrieval import simple_similarity_search, format_context_for_prompt
+from pathlib import Path
+
+ROOT_DIR = Path(__file__).resolve().parents[1]
+if str(ROOT_DIR) not in sys.path:
+    sys.path.insert(0, str(ROOT_DIR))
+
+from src.core.pdf_processor import chunk_pdf_text
+from src.core.retrieval import simple_similarity_search, format_context_for_prompt
 
 
 def test_pdf_loading():
@@ -10,7 +16,7 @@ def test_pdf_loading():
     print("TEST 1: PDF Loading & Chunking")
     print("=" * 60)
     
-    pdf_path = "test-pdf.pdf"
+    pdf_path = ROOT_DIR / "test-pdf.pdf"
     chunks = chunk_pdf_text(pdf_path, chunk_size=500, overlap=50)
     
     print(f"✓ Successfully loaded PDF")
@@ -66,7 +72,7 @@ def test_prompt_building(chunks):
     print("TEST 3: Prompt Construction")
     print("=" * 60)
     
-    from utils.retrieval import build_rag_prompt
+    from src.core.retrieval import build_rag_prompt
     
     query = "What is this PDF about?"
     retrieved = simple_similarity_search(query, chunks, top_k=2)
