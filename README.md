@@ -14,7 +14,6 @@ A production-ready **Retrieval-Augmented Generation (RAG)** system with a clean 
 
 ### 🎯 Core Capabilities
 - **🤖 Multi-Model Support**: Choose from 12+ LLMs (GPT-4o, Claude 3.5, Gemini, Llama, etc.)
-- **📄 Drag-and-Drop PDF Upload**: Intuitive GUI with file management
 - **🔍 Semantic Search**: Sentence Transformers embeddings (384-dim, local inference)
 - **🎯 Two-Stage Retrieval**: Initial semantic search → Cross-encoder reranking
 - **⚡ Streaming Responses**: Real-time token-by-token output
