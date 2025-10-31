@@ -1,0 +1,36 @@
+[project]
+name = "rag-pipeline"
+version = "1.0.0"
+description = "Advanced RAG pipeline with semantic embeddings, reranking, and multi-PDF support"
+readme = "README.md"
+requires-python = ">=3.11"
+authors = [
+    {name = "Your Name", email = "your.email@example.com"}
+]
+license = {text = "MIT"}
+keywords = ["rag", "pdf", "llm", "semantic-search", "embeddings", "gui"]
+classifiers = [
+    "Development Status :: 4 - Beta",
+    "Intended Audience :: Developers",
+    "License :: OSI Approved :: MIT License",
+    "Programming Language :: Python :: 3.11",
+    "Programming Language :: Python :: 3.12",
+]
+dependencies = [
+    "openai>=2.6.1",
+    "pdfplumber>=0.11.0",
+    "sentence-transformers>=3.0.0",
+    "numpy>=1.24.0",
+    "requests>=2.31.0",
+    "pyqt5==5.15.11",
+    "pyqt5-qt5==5.15.2",
+]
+
+[project.scripts]
+rag-gui = "gui_main:main"
+rag-cli = "cli_main:main"
+
+[project.urls]
+Homepage = "https://github.com/yourusername/rag-pipeline"
+Repository = "https://github.com/yourusername/rag-pipeline"
+Issues = "https://github.com/yourusername/rag-pipeline/issues"
