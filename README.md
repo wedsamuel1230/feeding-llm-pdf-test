@@ -13,7 +13,7 @@ A production-ready **Retrieval-Augmented Generation (RAG)** system with a clean 
 ## ✨ Key Features
 
 ### 🎯 Core Capabilities
-- **🤖 Multi-Model Support**: Choose from 12+ LLMs (GPT-4o, Claude 3.5, Gemini, Llama, etc.)
+- **🤖 Multi-Model Support**: Choose from 20+ LLMs (GPT-5, Claude 4.5, Gemini 2.5, Grok-4, etc.)
 - **📄 Drag-and-Drop PDF Upload**: Intuitive GUI with file management
 - **🔍 Semantic Search**: Sentence Transformers embeddings (384-dim, local inference)
 - **🎯 Two-Stage Retrieval**: Initial semantic search → Cross-encoder reranking
@@ -55,7 +55,7 @@ flowchart TB
     end
     
     subgraph "LLM Generation"
-        POE["Poe API Client<br/>12+ Models<br/>Streaming Support"]
+        POE["Poe API Client<br/>20+ Models<br/>Streaming Support"]
         PROMPT["Prompt Builder<br/>Context + Citations"]
         
         PROMPT --> POE
@@ -173,7 +173,7 @@ This will:
 ### GUI Mode
 
 #### 1. **Configure Model**
-   - Select your preferred LLM from the dropdown (default: `gpt-4o-mini`)
+   - Select your preferred LLM from the dropdown (default: `Assistant`)
    - Check API key status indicator (✅ green = ready)
 
 #### 2. **Upload PDFs**
@@ -251,12 +251,40 @@ Based on the PDF documents, the main points are:
 
 ### Model Selection (GUI)
 
-Available models in dropdown:
-- **GPT Models**: `gpt-4o-mini`, `gpt-4o`, `gpt-3.5-turbo`
-- **Claude**: `claude-3.5-sonnet`, `claude-3-opus`, `claude-3-haiku`
-- **Gemini**: `gemini-2.0-flash-exp`, `gemini-pro`
-- **Llama**: `llama-3.3-70b`, `llama-3.1-405b`
-- **Others**: `mistral-large`, `qwen-2.5-72b`
+Available models in dropdown (20 models across 5 providers, updated 2025-10-31):
+
+**Poe**
+- `Assistant` - General-purpose router (default)
+
+**OpenAI (8 models)**
+- `GPT-5-Chat` - Latest non-reasoning GPT-5 snapshot
+- `GPT-5` - Flagship with improved coding skills
+- `GPT-5-Pro` - Enhanced flagship model
+- `GPT-5-Codex` - Software engineering specialized
+- `GPT-4o` - Natural, engaging writing style
+- `GPT-5-mini` - Fast & affordable, beats GPT-4.1
+- `GPT-5-nano` - Extremely fast & cheap for summarization
+- `o3-pro` - Well-rounded, powerful across domains
+
+**Anthropic (2 models)**
+- `Claude-Sonnet-4.5` - Major capability leap forward
+- `Claude-Haiku-4.5` - Fastest & most efficient
+
+**Google (2 models)**
+- `Gemini-2.5-Pro` - Advanced frontier performance
+- `Gemini-2.5-Flash` - Built on 2.0 Flash foundation
+
+**XAI (4 models)**
+- `Grok-4` - xAI's most intelligent language model
+- `Grok-4-Fast-Reasoning` - Logic & complex problem-solving
+- `Grok-4-Fast-Non-Reasoning` - Fast content generation
+- `Grok-Code-Fast-1` - High-performance coding
+
+**Others (3 models)**
+- `Qwen-3-Next-80B-Think` - Next-gen with thinking mode enabled
+- `Qwen3-Next-80B` - Next-gen foundation model
+- `DeepSeek-V3.2-Exp` - Experimental model
+- `DeepSeek-R1` - Top open-source reasoning LLM
 
 ### Advanced Configuration (`src/config.py`)
 
