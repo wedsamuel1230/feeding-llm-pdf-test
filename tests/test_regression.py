@@ -10,13 +10,14 @@ def test_simple_chat():
     # Verify client can be initialized
     try:
         client = OpenAI(
-            api_key=os.getenv("XAI_API_KEY", "dummy-key"),
+            api_key=os.getenv("POE_API_KEY", "dummy-key"),
             base_url="https://api.x.ai/v1",
         )
         print("✓ Client initialized correctly")
-        print(f"  API Key set: {bool(os.getenv('XAI_API_KEY'))}")
+        print(f"  API Key set: {bool(os.getenv('POE_API_KEY'))}")
         print(f"  Base URL: {client.base_url}")
-        return True
+        assert str(client.base_url).rstrip("/") == "https://api.x.ai/v1"
+        assert isinstance(client, OpenAI)
     except Exception as e:
         print(f"❌ Client initialization failed: {e}")
         raise

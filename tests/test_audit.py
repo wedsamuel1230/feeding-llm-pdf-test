@@ -2,23 +2,25 @@
 """Phase 4 Self-Audit: Comprehensive validation of all components and regressions."""
 
 import sys
-import os
 from pathlib import Path
 
-# Add project root to path
-sys.path.insert(0, str(Path(__file__).parent))
+ROOT_DIR = Path(__file__).resolve().parents[1]
+if str(ROOT_DIR) not in sys.path:
+    sys.path.insert(0, str(ROOT_DIR))
 
-from utils.pdf_processor import chunk_pdf_text, get_pdf_id, chunk_multiple_pdfs
-from utils.embeddings import EmbeddingCache
-from utils.reranker import Reranker
-from utils.retrieval import (
+from src.core.pdf_processor import chunk_pdf_text, get_pdf_id, chunk_multiple_pdfs
+from src.core.embeddings import EmbeddingCache
+from src.core.reranker import Reranker
+from src.core.retrieval import (
     semantic_search,
     retrieve_with_reranking,
     simple_similarity_search,
     format_context_for_prompt,
     build_rag_prompt,
 )
-from config import *
+import src.config as config
+
+PDF_PATH = ROOT_DIR / "test-pdf.pdf"
 
 
 def audit_backward_compatibility():
@@ -27,7 +29,7 @@ def audit_backward_compatibility():
     print("AUDIT 1: Backward Compatibility (Keyword Search)")
     print("=" * 70)
 
-    chunks = chunk_pdf_text("test-pdf.pdf")
+    chunks = chunk_pdf_text(PDF_PATH)
     query = "electronic communication"
 
     # Old method should still work
@@ -49,11 +51,11 @@ def audit_multi_pdf_support():
     print("=" * 70)
 
     # Single PDF
-    chunks_single = chunk_pdf_text("test-pdf.pdf")
+    chunks_single = chunk_pdf_text(PDF_PATH)
     assert all("pdf_id" in c for c in chunks_single), "❌ Chunks missing pdf_id"
     assert all("pdf_name" in c for c in chunks_single), "❌ Chunks missing pdf_name"
     
-    pdf_id_single = get_pdf_id("test-pdf.pdf")
+    pdf_id_single = get_pdf_id(PDF_PATH)
     assert len(pdf_id_single) == 8, f"❌ PDF ID should be 8 chars, got {len(pdf_id_single)}"
     
     print(f"✓ Single PDF loading verified")
@@ -61,7 +63,7 @@ def audit_multi_pdf_support():
     print(f"  - Sample chunk: {chunks_single[0]['pdf_name']}, Page {chunks_single[0]['page']}")
     
     # Multi-PDF (using same PDF twice to simulate multiple files)
-    chunks_multi = chunk_multiple_pdfs(["test-pdf.pdf"])
+    chunks_multi = chunk_multiple_pdfs([PDF_PATH])
     assert len(chunks_multi) > 0, "❌ Multi-PDF failed to load"
     
     unique_pdfs = set(c["pdf_id"] for c in chunks_multi)
@@ -76,7 +78,7 @@ def audit_embedding_caching():
     print("AUDIT 3: Embedding Cache Persistence")
     print("=" * 70)
 
-    chunks = chunk_pdf_text("test-pdf.pdf")
+    chunks = chunk_pdf_text(PDF_PATH)
     cache = EmbeddingCache()
     
     # First run - should compute
@@ -89,7 +91,7 @@ def audit_embedding_caching():
     assert embeddings_1[first_key].shape == (384,), "❌ Embedding dimension mismatch"
     
     # Check cache file was created
-    cache_files = list(Path(EMBEDDING_CACHE_DIR).glob("*.json"))
+    cache_files = list(Path(config.EMBEDDING_CACHE_DIR).glob("*.json"))
     assert len(cache_files) > 0, "❌ No cache files created"
     
     # Second run - should load from cache (faster)
@@ -115,7 +117,7 @@ def audit_two_stage_retrieval():
     print("AUDIT 4: Two-Stage Retrieval (Semantic + Reranking)")
     print("=" * 70)
 
-    chunks = chunk_pdf_text("test-pdf.pdf")
+    chunks = chunk_pdf_text(PDF_PATH)
     query = "What topics are covered?"
     
     cache = EmbeddingCache()
@@ -125,7 +127,7 @@ def audit_two_stage_retrieval():
     embeddings = cache.get_embeddings(chunks)
     query_embedding = cache.embed_text(query)
     
-    results_stage1 = semantic_search(query, chunks, embeddings, query_embedding, top_k=RETRIEVAL_TOP_K)
+    results_stage1 = semantic_search(query, chunks, embeddings, query_embedding, top_k=config.RETRIEVAL_TOP_K)
     assert len(results_stage1) > 0, "❌ Semantic search found no results"
     
     print(f"✓ Stage 1 (Semantic Search):")
@@ -138,9 +140,9 @@ def audit_two_stage_retrieval():
         chunks,
         cache,
         reranker,
-        top_k=FINAL_TOP_K
+        top_k=config.FINAL_TOP_K
     )
-    assert len(results_stage2) <= FINAL_TOP_K, "❌ Reranking returned too many results"
+    assert len(results_stage2) <= config.FINAL_TOP_K, "❌ Reranking returned too many results"
     
     print(f"✓ Stage 2 (Cross-Encoder Reranking):")
     print(f"  - Reranked to {len(results_stage2)} final results")
@@ -156,7 +158,7 @@ def audit_citation_format():
     print("AUDIT 5: Citation Format & Context Structure")
     print("=" * 70)
 
-    chunks = chunk_pdf_text("test-pdf.pdf")
+    chunks = chunk_pdf_text(PDF_PATH)
     query = "course"
     
     cache = EmbeddingCache()
@@ -208,16 +210,16 @@ def audit_config_centralization():
     ]
     
     for param in required_params:
-        assert hasattr(sys.modules["config"], param), f"❌ Missing parameter: {param}"
+        assert hasattr(config, param), f"❌ Missing parameter: {param}"
     
     print(f"✓ All {len(required_params)} config parameters present:")
-    print(f"  - POE_MODEL: {POE_MODEL}")
-    print(f"  - EMBEDDING_MODEL: {EMBEDDING_MODEL} ({EMBEDDING_DIM}-dim)")
-    print(f"  - RERANKER_MODEL: {RERANKER_MODEL}")
-    print(f"  - CHUNK_SIZE: {CHUNK_SIZE} words, OVERLAP: {CHUNK_OVERLAP}")
-    print(f"  - Retrieve: {RETRIEVAL_TOP_K}, Return: {FINAL_TOP_K}")
-    print(f"  - Streaming: {STREAM_ENABLED}")
-    print(f"  - Cache dir: {EMBEDDING_CACHE_DIR}")
+    print(f"  - POE_MODEL: {config.POE_MODEL}")
+    print(f"  - EMBEDDING_MODEL: {config.EMBEDDING_MODEL} ({config.EMBEDDING_DIM}-dim)")
+    print(f"  - RERANKER_MODEL: {config.RERANKER_MODEL}")
+    print(f"  - CHUNK_SIZE: {config.CHUNK_SIZE} words, OVERLAP: {config.CHUNK_OVERLAP}")
+    print(f"  - Retrieve: {config.RETRIEVAL_TOP_K}, Return: {config.FINAL_TOP_K}")
+    print(f"  - Streaming: {config.STREAM_ENABLED}")
+    print(f"  - Cache dir: {config.EMBEDDING_CACHE_DIR}")
     
     return True
 

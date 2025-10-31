@@ -103,8 +103,8 @@ def test_full_rag_pipeline():
     print("  ✓ Prompt construction for LLM")
     print()
     print("To run with real Grok API:")
-    print("  1. Get your XAI API key from https://console.x.ai")
-    print("  2. Set: $env:XAI_API_KEY = 'your-key'")
+    print("  1. Get your Poe API key from https://poe.com")
+    print("  2. Set: $env:POE_API_KEY = 'your-key'")
     print("  3. Run: uv run main.py")
     print()
 

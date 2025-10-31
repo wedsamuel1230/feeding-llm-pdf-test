@@ -1,6 +1,13 @@
 """Test suite for advanced RAG pipeline with embeddings, reranking, and caching."""
 import sys
 import os
+from pathlib import Path
+
+ROOT_DIR = Path(__file__).resolve().parents[1]
+if str(ROOT_DIR) not in sys.path:
+    sys.path.insert(0, str(ROOT_DIR))
+
+PDF_PATH = ROOT_DIR / "test-pdf.pdf"
 
 def test_embeddings():
     """Test embedding generation and caching."""
@@ -8,13 +15,12 @@ def test_embeddings():
     print("TEST 1: Embedding Generation & Caching")
     print("=" * 70)
     
-    from utils.embeddings import EmbeddingCache
-    from utils.pdf_processor import chunk_pdf_text
+    from src.core.embeddings import EmbeddingCache
+    from src.core.pdf_processor import chunk_pdf_text
     
     # Load PDF and create chunks
-    pdf_path = "test-pdf.pdf"
-    print(f"Loading {pdf_path}...")
-    chunks = chunk_pdf_text(pdf_path)
+    print(f"Loading {PDF_PATH}...")
+    chunks = chunk_pdf_text(PDF_PATH)
     print(f"✓ Created {len(chunks)} chunks")
     
     # Initialize embedding cache
@@ -38,13 +44,12 @@ def test_semantic_search():
     print("TEST 2: Semantic Search with Embeddings")
     print("=" * 70)
     
-    from utils.embeddings import EmbeddingCache
-    from utils.pdf_processor import chunk_pdf_text
-    from utils.retrieval import semantic_search
-    import config
+    from src.core.embeddings import EmbeddingCache
+    from src.core.pdf_processor import chunk_pdf_text
+    from src.core.retrieval import semantic_search
     
     # Setup
-    chunks = chunk_pdf_text("test-pdf.pdf")
+    chunks = chunk_pdf_text(PDF_PATH)
     cache = EmbeddingCache()
     embeddings = cache.get_embeddings(chunks)
     query_embedding = cache.embed_text("What is the course about?")
@@ -69,10 +74,10 @@ def test_reranking():
     print("TEST 3: Reranking with Cross-Encoder")
     print("=" * 70)
     
-    from utils.reranker import Reranker
-    from utils.pdf_processor import chunk_pdf_text
+    from src.core.reranker import Reranker
+    from src.core.pdf_processor import chunk_pdf_text
     
-    chunks = chunk_pdf_text("test-pdf.pdf")[:5]  # First 5 chunks
+    chunks = chunk_pdf_text(PDF_PATH)[:5]  # First 5 chunks
     reranker = Reranker()
     
     query = "Electronic signals and communication"
@@ -94,9 +99,9 @@ def test_multi_pdf():
     print("TEST 4: Multi-PDF Support")
     print("=" * 70)
     
-    from utils.pdf_processor import chunk_multiple_pdfs, get_pdf_id
+    from src.core.pdf_processor import chunk_multiple_pdfs, get_pdf_id
     
-    pdf_paths = ["test-pdf.pdf"]  # Add more PDFs as needed
+    pdf_paths = [PDF_PATH]  # Add more PDFs as needed
     print(f"Loading {len(pdf_paths)} PDF(s)...")
     
     chunks = chunk_multiple_pdfs(pdf_paths)
@@ -119,13 +124,17 @@ def test_full_pipeline():
     print("TEST 5: Full RAG Pipeline (without API)")
     print("=" * 70)
     
-    from utils.embeddings import EmbeddingCache
-    from utils.reranker import Reranker
-    from utils.pdf_processor import chunk_pdf_text
-    from utils.retrieval import retrieve_with_reranking, format_context_for_prompt, build_rag_prompt
+    from src.core.embeddings import EmbeddingCache
+    from src.core.reranker import Reranker
+    from src.core.pdf_processor import chunk_pdf_text
+    from src.core.retrieval import (
+        retrieve_with_reranking,
+        format_context_for_prompt,
+        build_rag_prompt,
+    )
     
     # Load and chunk
-    chunks = chunk_pdf_text("test-pdf.pdf")
+    chunks = chunk_pdf_text(PDF_PATH)
     print(f"Loaded {len(chunks)} chunks")
     
     # Initialize ML components
