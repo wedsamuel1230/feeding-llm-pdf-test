@@ -13,7 +13,7 @@ Thank you for your interest in contributing! This document provides guidelines a
 
 ```powershell
 # Clone your fork
-git clone https://github.com/yourusername/rag-pipeline.git
+git clone https://github.com/wedsamuel1230/rag-pipeline.git
 cd rag-pipeline
 
 # Create virtual environment
@@ -291,8 +291,6 @@ Contributors will be acknowledged in:
 ## 📞 Getting Help
 
 - **GitHub Discussions**: For questions and ideas
-- **Discord**: [Join our community](https://discord.gg/yourserver)
-- **Email**: maintainer@example.com
 
 ## 📜 Code of Conduct
 
