@@ -13,12 +13,7 @@ A production-ready **Retrieval-Augmented Generation (RAG)** system with a clean 
 ## ✨ Key Features
 
 ### 🎯 Core Capabilities
-<<<<<<< HEAD
 - **🤖 Multi-Model Support**: Choose from 21 LLMs across 5 providers (GPT-5, Claude 4.5, Gemini 2.5, Grok-4, DeepSeek, Qwen, etc.)
-- **📄 Drag-and-Drop PDF Upload**: Intuitive GUI with file management
-=======
-- **🤖 Multi-Model Support**: Choose from 20+ LLMs (GPT-5, Claude 4.5, Gemini, etc.)
->>>>>>> 129f7a5d21f9ce6d8de7854cc6f68d0e1a62a287
 - **🔍 Semantic Search**: Sentence Transformers embeddings (384-dim, local inference)
 - **🎯 Two-Stage Retrieval**: Initial semantic search → Cross-encoder reranking
 - **⚡ Streaming Responses**: Real-time token-by-token output
@@ -580,8 +575,6 @@ If you find this project useful, please consider giving it a star! ⭐
 ---
 
 <div align="center">
-
-**Made with ❤️ by the RAG Pipeline Team**
 
 [Report Bug](https://github.com/wedsamuel1230/rag-pipeline/issues) · [Request Feature](https://github.com/wedsamuel1230/rag-pipeline/issues) · [Documentation](https://github.com/wedsamuel1230 /rag-pipeline/wiki)
 
