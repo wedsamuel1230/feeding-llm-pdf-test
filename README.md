@@ -172,13 +172,8 @@ This will:
 
 #### 1. **Configure Model**
    - Select your preferred LLM from the dropdown (default: `Assistant`)
-<<<<<<< HEAD
-   - Check API key status indicator (✅ green = ready)
-=======
->>>>>>> 129f7a5d21f9ce6d8de7854cc6f68d0e1a62a287
 
 #### 2. **Upload PDFs**
-   - **Drag & Drop**: Drag PDF files into the drop zone
    - **Click Add**: Use "➕ Add Files" button to browse
    - **Multi-select**: Select multiple files at once
 
