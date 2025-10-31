@@ -13,8 +13,12 @@ A production-ready **Retrieval-Augmented Generation (RAG)** system with a clean 
 ## ✨ Key Features
 
 ### 🎯 Core Capabilities
+<<<<<<< HEAD
 - **🤖 Multi-Model Support**: Choose from 21 LLMs across 5 providers (GPT-5, Claude 4.5, Gemini 2.5, Grok-4, DeepSeek, Qwen, etc.)
 - **📄 Drag-and-Drop PDF Upload**: Intuitive GUI with file management
+=======
+- **🤖 Multi-Model Support**: Choose from 20+ LLMs (GPT-5, Claude 4.5, Gemini, etc.)
+>>>>>>> 129f7a5d21f9ce6d8de7854cc6f68d0e1a62a287
 - **🔍 Semantic Search**: Sentence Transformers embeddings (384-dim, local inference)
 - **🎯 Two-Stage Retrieval**: Initial semantic search → Cross-encoder reranking
 - **⚡ Streaming Responses**: Real-time token-by-token output
@@ -100,7 +104,6 @@ flowchart TB
 - Python 3.11 or higher
 - 2GB RAM minimum (4GB recommended for multiple PDFs)
 - Internet connection (first run downloads ML models ~100MB)
-- **Windows Users**: [Microsoft Visual C++ Redistributable](https://aka.ms/vs/17/release/vc_redist.x64.exe) (required for PyTorch)
 
 ### Option 1: Using `uv` (Recommended)
 
@@ -174,7 +177,10 @@ This will:
 
 #### 1. **Configure Model**
    - Select your preferred LLM from the dropdown (default: `Assistant`)
+<<<<<<< HEAD
    - Check API key status indicator (✅ green = ready)
+=======
+>>>>>>> 129f7a5d21f9ce6d8de7854cc6f68d0e1a62a287
 
 #### 2. **Upload PDFs**
    - **Drag & Drop**: Drag PDF files into the drop zone
@@ -216,33 +222,28 @@ python cli_main.py --pdf=document1.pdf,document2.pdf --query="Your question here
 #### Example Output
 
 ```
-🚀 Advanced RAG Pipeline with Embeddings, Reranking & Streaming
-======================================================================
+The PDF documents cover a variety of topics related to personal development, workplace dynamics, and psychological resilience. Here are the main points summarized from the retrieved context:
 
-📄 Loading 1 PDF(s)...
-✓ Extracted 28 chunks total
+1. **Workplace Dynamics and Personality**:
+   - The documents discuss the strengths and weaknesses of individuals in the workplace through the lens of personality types, specifically referencing the Enneagram.
+   - They emphasize the importance of understanding one’s interests and professional development, suggesting that individuals can find motivation and values in their careers through "career anchors".
 
-❓ Query: Explain the main points from the PDF with sources.
+2. **Adversity and Coping Strategies**:
+   - There is a focus on the concepts of adversity and stress, highlighting that these elements can affect anyone, regardless of age or socioeconomic status.
+   - Events typically seen as positive, like marriage or vacations, can also induce stress and be perceived as adversities.
+   - Strategies for coping with adversity and managing stress are discussed, including resilience-building techniques and Rational Emotive Behavior Therapy (REBT).
 
-🔍 Retrieving relevant documents...
-✓ Retrieved 3 relevant chunks
+3. **Current Job Market Analysis**:
+   - The documents provide an analysis of the job market in Hong Kong, discussing various factors that impact employment opportunities.
 
-💬 Querying Poe API (streaming)...
+4. **Broader Perspectives on Education and Development**:
+   - There is mention of alternative learning pathways to broaden personal educational and career horizons.
+   - The importance of understanding oneself and others in the context of employment challenges is also highlighted, suggesting a need for personal insight and social awareness.
 
-======================================================================
-RESPONSE:
-======================================================================
-Based on the PDF documents, the main points are:
+5. **Cultural References**:
+   - The document includes a reference to a Korean drama titled "Kill Me Heal Me," which tells the story of a protagonist with multiple personalities and his relationship with a psychiatrist, reflecting themes of mental health and personal struggle.
 
-1. [Content streams here in real-time...]
-
-======================================================================
-📚 SOURCE CITATIONS:
-======================================================================
-  [1] document.pdf, Page 3
-  [2] document.pdf, Page 7
-  [3] document.pdf, Page 12
-======================================================================
+Overall, the documents aim to provide insights into personal and professional development while addressing mental health and societal factors that influence career paths.
 ```
 
 ---
