@@ -9,7 +9,7 @@ The Advanced RAG Pipeline is built on a modular architecture that separates conc
 ```mermaid
 graph TB
     subgraph "Interface Layer"
-        GUI[PyQt5 GUI]
+        GUI[Tkinter GUI]
         CLI[CLI Interface]
     end
     
@@ -81,12 +81,13 @@ This balances **speed** (semantic search is O(n) with vectors) and **accuracy** 
 - Privacy: documents never leave your machine
 - Caching provides 3-5x speedup on repeat queries
 
-### Why PyQt5 for GUI?
+### Why Tkinter for GUI?
 
-- Native performance (C++ backend)
+- Python stdlib (no external dependencies)
+- Zero binary wheel issues on Windows
+- Lightweight and fast startup
 - Cross-platform (Windows, macOS, Linux)
-- Rich widget library with drag-drop support
-- No browser required (vs Streamlit/Gradio)
+- Simple maintenance and deployment
 
 ## Performance Characteristics
 
@@ -152,7 +153,7 @@ This balances **speed** (semantic search is O(n) with vectors) and **accuracy** 
 
 | Component | Technology | Rationale |
 |-----------|-----------|-----------|
-| GUI | PyQt5 | Native performance, rich widgets |
+| GUI | Tkinter | Python stdlib, zero dependencies, Windows-friendly |
 | Embeddings | Sentence Transformers | Local, fast, good quality |
 | Reranking | Cross-Encoder | State-of-art for passage reranking |
 | PDF | pdfplumber | Reliable text extraction |

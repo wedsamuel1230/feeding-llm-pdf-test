@@ -1,16 +1,11 @@
-"""Main GUI window for RAG pipeline."""
+"""Tkinter-based main window for RAG pipeline GUI."""
 
-import sys
+import tkinter as tk
+from tkinter import ttk, scrolledtext, filedialog, messagebox
+import threading
+import os
 from pathlib import Path
 from typing import List, Optional
-
-from PyQt5.QtWidgets import (
-    QMainWindow, QWidget, QVBoxLayout, QHBoxLayout, 
-    QPushButton, QTextEdit, QLabel, QComboBox, QFileDialog,
-    QLineEdit, QMessageBox, QSplitter, QGroupBox
-)
-from PyQt5.QtCore import Qt, QThread, pyqtSignal
-from PyQt5.QtGui import QFont, QIcon
 
 from openai import OpenAI
 
@@ -22,393 +17,302 @@ from ..core import (
     retrieve_with_reranking,
     build_rag_prompt
 )
-from .widgets import DropZone
 
 
-class QueryThread(QThread):
-    """Background thread for RAG query processing."""
+class RAGMainWindow:
+    """Main application window for RAG pipeline."""
     
-    chunk_received = pyqtSignal(str)  # Streaming chunks
-    finished = pyqtSignal()
-    error = pyqtSignal(str)
-    
-    def __init__(self, client: OpenAI, prompt: str, model: str):
-        super().__init__()
-        self.client = client
-        self.prompt = prompt
-        self.model = model
-    
-    def run(self):
-        """Execute query in background."""
-        try:
-            with self.client.chat.completions.create(
-                model=self.model,
-                messages=[
-                    {
-                        "role": "system",
-                        "content": "You are a helpful AI assistant that answers questions about PDF documents with accurate citations."
-                    },
-                    {
-                        "role": "user",
-                        "content": self.prompt
-                    }
-                ],
-                max_tokens=2048,
-                stream=True,
-            ) as response:
-                for chunk in response:
-                    if chunk.choices[0].delta.content:
-                        self.chunk_received.emit(chunk.choices[0].delta.content)
-            
-            self.finished.emit()
+    def __init__(self, root: tk.Tk):
+        self.root = root
+        self.root.title("Advanced RAG Pipeline")
+        self.root.geometry("900x700")
         
-        except Exception as e:
-            self.error.emit(str(e))
-
-
-class RAGMainWindow(QMainWindow):
-    """Main application window."""
-    
-    def __init__(self):
-        super().__init__()
-        self.setWindowTitle("🚀 Advanced RAG Pipeline - PDF Q&A")
-        self.setGeometry(100, 100, 1200, 800)
-        
-        # Core components
+        self.pdf_paths: List[str] = []
+        self.chunks: List[dict] = []
+        self.poe_client: Optional[OpenAI] = None
         self.embedding_cache: Optional[EmbeddingCache] = None
         self.reranker: Optional[Reranker] = None
-        self.poe_client: Optional[OpenAI] = None
-        self.chunks: List[dict] = []
-        self.query_thread: Optional[QueryThread] = None
+        self.is_processing = False
         
-        # Setup UI
-        self._setup_ui()
-        self._setup_connections()
-        
-        # Initialize components
         self._initialize_components()
-    
-    def _setup_ui(self):
-        """Setup the user interface."""
-        central_widget = QWidget()
-        self.setCentralWidget(central_widget)
+        self._build_ui()
         
-        main_layout = QVBoxLayout(central_widget)
-        main_layout.setSpacing(15)
-        main_layout.setContentsMargins(20, 20, 20, 20)
-        
-        # === Top Section: Configuration ===
-        config_group = QGroupBox("⚙️ Configuration")
-        config_layout = QVBoxLayout()
-        
-        # Model selection
-        model_layout = QHBoxLayout()
-        model_label = QLabel("LLM Model:")
-        model_label.setMinimumWidth(100)
-        
-        self.model_combo = QComboBox()
-        self.model_combo.addItems(config.POE_AVAILABLE_MODELS)
-        self.model_combo.setCurrentText(config.POE_MODEL)
-        self.model_combo.setToolTip("Select the Poe API model to use")
-        
-        model_layout.addWidget(model_label)
-        model_layout.addWidget(self.model_combo, 1)
-        
-        # API key status
-        self.api_status_label = QLabel()
-        self._update_api_status()
-        model_layout.addWidget(self.api_status_label)
-        
-        config_layout.addLayout(model_layout)
-        config_group.setLayout(config_layout)
-        main_layout.addWidget(config_group)
-        
-        # === Middle Section: File Upload ===
-        file_group = QGroupBox("📄 PDF Documents")
-        file_layout = QVBoxLayout()
-        
-        # Drop zone
-        self.drop_zone = DropZone()
-        self.drop_zone.setMinimumHeight(150)
-        file_layout.addWidget(self.drop_zone)
-        
-        # File control buttons
-        btn_layout = QHBoxLayout()
-        
-        self.add_btn = QPushButton("➕ Add Files")
-        self.add_btn.clicked.connect(self._add_files)
-        
-        self.remove_btn = QPushButton("➖ Remove Selected")
-        self.remove_btn.clicked.connect(self.drop_zone.remove_selected)
-        
-        self.clear_btn = QPushButton("🗑️ Clear All")
-        self.clear_btn.clicked.connect(self.drop_zone.clear_all)
-        
-        self.process_btn = QPushButton("⚡ Process PDFs")
-        self.process_btn.clicked.connect(self._process_pdfs)
-        self.process_btn.setStyleSheet("""
-            QPushButton {
-                background-color: #0078d4;
-                color: white;
-                font-weight: bold;
-                padding: 8px;
-                border-radius: 4px;
-            }
-            QPushButton:hover {
-                background-color: #005a9e;
-            }
-            QPushButton:disabled {
-                background-color: #cccccc;
-            }
-        """)
-        
-        btn_layout.addWidget(self.add_btn)
-        btn_layout.addWidget(self.remove_btn)
-        btn_layout.addWidget(self.clear_btn)
-        btn_layout.addStretch()
-        btn_layout.addWidget(self.process_btn)
-        
-        file_layout.addLayout(btn_layout)
-        
-        # Status label
-        self.status_label = QLabel("📊 Status: Ready")
-        self.status_label.setStyleSheet("color: #666; font-style: italic;")
-        file_layout.addWidget(self.status_label)
-        
-        file_group.setLayout(file_layout)
-        main_layout.addWidget(file_group)
-        
-        # === Bottom Section: Query & Response ===
-        qa_splitter = QSplitter(Qt.Vertical)
-        
-        # Query section
-        query_group = QGroupBox("❓ Your Question")
-        query_layout = QVBoxLayout()
-        
-        self.query_input = QTextEdit()
-        self.query_input.setPlaceholderText("Enter your question about the PDF documents...")
-        self.query_input.setMaximumHeight(100)
-        self.query_input.setFont(QFont("Segoe UI", 10))
-        
-        self.ask_btn = QPushButton("🚀 Ask Question")
-        self.ask_btn.clicked.connect(self._ask_question)
-        self.ask_btn.setEnabled(False)
-        self.ask_btn.setStyleSheet("""
-            QPushButton {
-                background-color: #28a745;
-                color: white;
-                font-weight: bold;
-                padding: 10px;
-                border-radius: 4px;
-                font-size: 14px;
-            }
-            QPushButton:hover {
-                background-color: #218838;
-            }
-            QPushButton:disabled {
-                background-color: #cccccc;
-            }
-        """)
-        
-        query_layout.addWidget(self.query_input)
-        query_layout.addWidget(self.ask_btn)
-        query_group.setLayout(query_layout)
-        
-        # Response section
-        response_group = QGroupBox("💬 AI Response")
-        response_layout = QVBoxLayout()
-        
-        self.response_display = QTextEdit()
-        self.response_display.setReadOnly(True)
-        self.response_display.setFont(QFont("Segoe UI", 10))
-        self.response_display.setPlaceholderText("AI response will appear here...")
-        
-        response_layout.addWidget(self.response_display)
-        response_group.setLayout(response_layout)
-        
-        qa_splitter.addWidget(query_group)
-        qa_splitter.addWidget(response_group)
-        qa_splitter.setSizes([150, 350])
-        
-        main_layout.addWidget(qa_splitter, 1)
-    
-    def _setup_connections(self):
-        """Setup signal-slot connections."""
-        self.drop_zone.files_changed.connect(self._on_files_changed)
-    
     def _initialize_components(self):
-        """Initialize ML components."""
+        """Initialize Poe client and ML models."""
         try:
-            self.status_label.setText("📊 Status: Initializing ML models...")
-            
-            # Initialize Poe client
-            if config.POE_API_KEY:
+            api_key = os.getenv("POE_API_KEY")
+            if not api_key:
+                messagebox.showwarning(
+                    "API Key Missing",
+                    "POE_API_KEY environment variable not set.\n\n"
+                    "Set it with:\n"
+                    "  $env:POE_API_KEY = 'your-api-key'\n\n"
+                    "You can still load PDFs, but queries will fail."
+                )
+            else:
                 self.poe_client = OpenAI(
-                    api_key=config.POE_API_KEY,
-                    base_url=config.POE_BASE_URL,
+                    api_key=api_key,
+                    base_url=config.POE_BASE_URL
                 )
             
-            # Initialize embedding cache and reranker
             self.embedding_cache = EmbeddingCache()
             self.reranker = Reranker()
             
-            self.status_label.setText("📊 Status: Ready - Add PDF files to begin")
-        
         except Exception as e:
-            self.status_label.setText(f"⚠️ Status: Initialization error: {str(e)}")
-            QMessageBox.critical(self, "Initialization Error", f"Failed to initialize components:\n{str(e)}")
+            messagebox.showerror("Initialization Error", f"Failed to initialize components:\n{e}")
     
-    def _update_api_status(self):
-        """Update API key status indicator."""
-        if config.POE_API_KEY:
-            self.api_status_label.setText("✅ API Key Set")
-            self.api_status_label.setStyleSheet("color: green; font-weight: bold;")
-        else:
-            self.api_status_label.setText("❌ API Key Missing")
-            self.api_status_label.setStyleSheet("color: red; font-weight: bold;")
-            self.api_status_label.setToolTip("Set POE_API_KEY environment variable")
-    
-    def _on_files_changed(self, files: list):
-        """Handle file list changes."""
-        if files:
-            self.status_label.setText(f"📊 Status: {len(files)} file(s) added - Click 'Process PDFs'")
-        else:
-            self.status_label.setText("📊 Status: No files added")
-            self.chunks = []
-            self.ask_btn.setEnabled(False)
-    
-    def _add_files(self):
-        """Open file dialog to add PDFs."""
-        files, _ = QFileDialog.getOpenFileNames(
-            self,
-            "Select PDF Files",
-            "",
-            "PDF Files (*.pdf)"
-        )
-        if files:
-            self.drop_zone.add_files(files)
-    
-    def _process_pdfs(self):
-        """Process uploaded PDFs."""
-        files = self.drop_zone.get_files()
+    def _build_ui(self):
+        """Build the main user interface."""
+        main_frame = ttk.Frame(self.root, padding="10")
+        main_frame.grid(row=0, column=0, sticky=(tk.W, tk.E, tk.N, tk.S))
         
-        if not files:
-            QMessageBox.warning(self, "No Files", "Please add PDF files first.")
+        self.root.columnconfigure(0, weight=1)
+        self.root.rowconfigure(0, weight=1)
+        main_frame.columnconfigure(0, weight=1)
+        main_frame.rowconfigure(3, weight=1)
+        
+        pdf_frame = ttk.LabelFrame(main_frame, text="📄 PDF Documents", padding="10")
+        pdf_frame.grid(row=0, column=0, sticky=(tk.W, tk.E), pady=(0, 10))
+        pdf_frame.columnconfigure(0, weight=1)
+        
+        self.pdf_listbox = tk.Listbox(pdf_frame, height=3, selectmode=tk.EXTENDED)
+        self.pdf_listbox.grid(row=0, column=0, columnspan=2, sticky=(tk.W, tk.E), pady=(0, 5))
+        
+        btn_frame = ttk.Frame(pdf_frame)
+        btn_frame.grid(row=1, column=0, columnspan=2, sticky=(tk.W, tk.E))
+        
+        self.btn_add_pdf = ttk.Button(btn_frame, text="Add PDF(s)", command=self._add_pdfs)
+        self.btn_add_pdf.pack(side=tk.LEFT, padx=(0, 5))
+        
+        self.btn_clear_pdfs = ttk.Button(btn_frame, text="Clear All", command=self._clear_pdfs)
+        self.btn_clear_pdfs.pack(side=tk.LEFT)
+        
+        self.pdf_status_label = ttk.Label(pdf_frame, text="No PDFs loaded", foreground="gray")
+        self.pdf_status_label.grid(row=2, column=0, columnspan=2, sticky=tk.W, pady=(5, 0))
+        
+        model_frame = ttk.LabelFrame(main_frame, text="🤖 Model Selection", padding="10")
+        model_frame.grid(row=1, column=0, sticky=(tk.W, tk.E), pady=(0, 10))
+        model_frame.columnconfigure(1, weight=1)
+        
+        ttk.Label(model_frame, text="Model:").grid(row=0, column=0, sticky=tk.W, padx=(0, 10))
+        
+        self.model_var = tk.StringVar(value=config.POE_MODEL)
+        self.model_combo = ttk.Combobox(
+            model_frame,
+            textvariable=self.model_var,
+            values=config.POE_AVAILABLE_MODELS,
+            state="readonly",
+            width=40
+        )
+        self.model_combo.grid(row=0, column=1, sticky=(tk.W, tk.E))
+        
+        query_frame = ttk.LabelFrame(main_frame, text="❓ Query", padding="10")
+        query_frame.grid(row=2, column=0, sticky=(tk.W, tk.E), pady=(0, 10))
+        query_frame.columnconfigure(0, weight=1)
+        
+        self.query_entry = ttk.Entry(query_frame, font=("Segoe UI", 10))
+        self.query_entry.grid(row=0, column=0, sticky=(tk.W, tk.E), padx=(0, 10))
+        self.query_entry.bind('<Return>', lambda e: self._submit_query())
+        
+        self.btn_submit = ttk.Button(query_frame, text="Submit", command=self._submit_query, width=15)
+        self.btn_submit.grid(row=0, column=1)
+        
+        response_frame = ttk.LabelFrame(main_frame, text="💬 Response", padding="10")
+        response_frame.grid(row=3, column=0, sticky=(tk.W, tk.E, tk.N, tk.S), pady=(0, 10))
+        response_frame.columnconfigure(0, weight=1)
+        response_frame.rowconfigure(0, weight=1)
+        
+        self.response_text = scrolledtext.ScrolledText(
+            response_frame,
+            wrap=tk.WORD,
+            font=("Segoe UI", 10),
+            state=tk.DISABLED
+        )
+        self.response_text.grid(row=0, column=0, sticky=(tk.W, tk.E, tk.N, tk.S))
+        
+        self.response_text.tag_configure("citation", foreground="#0066cc", font=("Segoe UI", 9, "italic"))
+        self.response_text.tag_configure("error", foreground="#cc0000")
+        
+        self.status_label = ttk.Label(main_frame, text="Ready", relief=tk.SUNKEN, anchor=tk.W)
+        self.status_label.grid(row=4, column=0, sticky=(tk.W, tk.E))
+        
+    def _add_pdfs(self):
+        """Open file dialog to add PDF files."""
+        filepaths = filedialog.askopenfilenames(
+            title="Select PDF Files",
+            filetypes=[("PDF files", "*.pdf"), ("All files", "*.*")]
+        )
+        
+        if filepaths:
+            for filepath in filepaths:
+                if filepath not in self.pdf_paths:
+                    self.pdf_paths.append(filepath)
+                    self.pdf_listbox.insert(tk.END, Path(filepath).name)
+            
+            self._load_pdfs()
+    
+    def _clear_pdfs(self):
+        """Clear all loaded PDFs."""
+        self.pdf_paths.clear()
+        self.chunks.clear()
+        self.pdf_listbox.delete(0, tk.END)
+        self.pdf_status_label.config(text="No PDFs loaded", foreground="gray")
+        self._update_status("PDFs cleared")
+    
+    def _load_pdfs(self):
+        """Load and chunk PDFs in background thread."""
+        if not self.pdf_paths:
             return
         
-        try:
-            self.status_label.setText(f"⏳ Processing {len(files)} PDF(s)...")
-            self.process_btn.setEnabled(False)
-            
-            # Chunk PDFs
-            self.chunks = chunk_multiple_pdfs(files)
-            
-            # Pre-generate embeddings
-            if self.embedding_cache:
-                self.embedding_cache.get_embeddings(self.chunks)
-            
-            self.status_label.setText(f"✅ Processed {len(files)} PDF(s) - {len(self.chunks)} chunks ready")
-            self.ask_btn.setEnabled(True)
-            self.process_btn.setEnabled(True)
-            
-            QMessageBox.information(
-                self,
-                "Success",
-                f"Successfully processed {len(files)} PDF(s)\n{len(self.chunks)} text chunks extracted and embedded."
-            )
+        self._update_status("Loading PDFs...")
+        self.btn_add_pdf.config(state=tk.DISABLED)
         
-        except Exception as e:
-            self.status_label.setText(f"❌ Error processing PDFs: {str(e)}")
-            self.process_btn.setEnabled(True)
-            QMessageBox.critical(self, "Processing Error", f"Failed to process PDFs:\n{str(e)}")
+        def load_task():
+            try:
+                self.chunks = chunk_multiple_pdfs(self.pdf_paths)
+                self.root.after(0, self._on_pdfs_loaded)
+            except Exception as e:
+                self.root.after(0, lambda: self._on_load_error(str(e)))
+        
+        threading.Thread(target=load_task, daemon=True).start()
     
-    def _ask_question(self):
-        """Ask a question about the PDFs."""
-        query = self.query_input.toPlainText().strip()
+    def _on_pdfs_loaded(self):
+        """Callback when PDFs are loaded successfully."""
+        num_chunks = len(self.chunks)
+        num_pdfs = len(self.pdf_paths)
+        self.pdf_status_label.config(
+            text=f"✓ Loaded {num_pdfs} PDF(s), {num_chunks} chunks extracted",
+            foreground="green"
+        )
+        self._update_status(f"Ready - {num_pdfs} PDF(s) loaded")
+        self.btn_add_pdf.config(state=tk.NORMAL)
+    
+    def _on_load_error(self, error_msg: str):
+        """Callback when PDF loading fails."""
+        self.pdf_status_label.config(text=f"❌ Error loading PDFs", foreground="red")
+        self._update_status("Error")
+        self.btn_add_pdf.config(state=tk.NORMAL)
+        messagebox.showerror("PDF Load Error", f"Failed to load PDFs:\n{error_msg}")
+    
+    def _submit_query(self):
+        """Submit query and get streaming response."""
+        query = self.query_entry.get().strip()
         
         if not query:
-            QMessageBox.warning(self, "No Question", "Please enter a question.")
+            messagebox.showwarning("Empty Query", "Please enter a query.")
             return
         
         if not self.chunks:
-            QMessageBox.warning(self, "No Documents", "Please process PDF files first.")
+            messagebox.showwarning("No PDFs", "Please add PDF files first.")
             return
         
-        if not config.POE_API_KEY:
-            QMessageBox.critical(
-                self,
-                "API Key Missing",
-                "Please set the POE_API_KEY environment variable and restart the application."
-            )
+        if not self.poe_client:
+            messagebox.showerror("API Error", "Poe API client not initialized. Check POE_API_KEY.")
             return
         
+        if self.is_processing:
+            messagebox.showinfo("Processing", "A query is already being processed.")
+            return
+        
+        self.is_processing = True
+        self.btn_submit.config(state=tk.DISABLED)
+        self._clear_response()
+        self._update_status("Retrieving documents...")
+        
+        def query_task():
+            try:
+                retrieved = retrieve_with_reranking(
+                    query,
+                    self.chunks,
+                    self.embedding_cache,
+                    self.reranker,
+                    top_k=config.FINAL_TOP_K
+                )
+                
+                if not retrieved:
+                    self.root.after(0, lambda: self._append_response("⚠️  No relevant documents found.", tag="error"))
+                    self.root.after(0, self._on_query_complete)
+                    return
+                
+                prompt = build_rag_prompt(query, retrieved)
+                self.root.after(0, lambda: self._update_status("Querying Poe API..."))
+                
+                model = self.model_var.get()
+                self._stream_response(prompt, model, retrieved)
+                
+            except Exception as e:
+                self.root.after(0, lambda: self._append_response(f"❌ Error: {e}", tag="error"))
+                self.root.after(0, self._on_query_complete)
+        
+        threading.Thread(target=query_task, daemon=True).start()
+    
+    def _stream_response(self, prompt: str, model: str, retrieved_chunks: List[dict]):
+        """Stream response from Poe API."""
         try:
-            # Disable UI during processing
-            self.ask_btn.setEnabled(False)
-            self.response_display.clear()
-            self.response_display.append("🔍 Retrieving relevant documents...\n")
-            
-            # Retrieve relevant chunks
-            retrieved = retrieve_with_reranking(
-                query,
-                self.chunks,
-                self.embedding_cache,
-                self.reranker,
-                top_k=config.FINAL_TOP_K
-            )
-            
-            if not retrieved:
-                self.response_display.append("⚠️ No relevant documents found.\n")
-                self.ask_btn.setEnabled(True)
-                return
-            
-            self.response_display.append(f"✓ Retrieved {len(retrieved)} relevant chunks\n")
-            self.response_display.append("💬 Querying AI model...\n\n")
-            self.response_display.append("─" * 70 + "\n")
-            
-            # Build prompt
-            prompt = build_rag_prompt(query, retrieved)
-            
-            # Get selected model
-            model = self.model_combo.currentText()
-            
-            # Start query thread
-            self.query_thread = QueryThread(self.poe_client, prompt, model)
-            self.query_thread.chunk_received.connect(self._on_chunk_received)
-            self.query_thread.finished.connect(lambda: self._on_query_finished(retrieved))
-            self.query_thread.error.connect(self._on_query_error)
-            self.query_thread.start()
-        
+            with self.poe_client.chat.completions.create(
+                model=model,
+                messages=[
+                    {"role": "system", "content": "You are a helpful AI assistant that answers questions about PDF documents with accurate citations."},
+                    {"role": "user", "content": prompt}
+                ],
+                max_tokens=2048,
+                stream=config.STREAM_ENABLED,
+            ) as response:
+                for chunk in response:
+                    if chunk.choices[0].delta.content:
+                        content = chunk.choices[0].delta.content
+                        self.root.after(0, lambda c=content: self._append_response(c))
+                
+                self.root.after(0, lambda: self._append_citations(retrieved_chunks))
+                self.root.after(0, self._on_query_complete)
+                
         except Exception as e:
-            self.response_display.append(f"\n❌ Error: {str(e)}\n")
-            self.ask_btn.setEnabled(True)
+            self.root.after(0, lambda: self._append_response(f"\n\n❌ API Error: {e}", tag="error"))
+            self.root.after(0, self._on_query_complete)
     
-    def _on_chunk_received(self, chunk: str):
-        """Handle streaming response chunk."""
-        self.response_display.insertPlainText(chunk)
-        self.response_display.ensureCursorVisible()
+    def _append_response(self, text: str, tag: str = None):
+        """Append text to response area."""
+        self.response_text.config(state=tk.NORMAL)
+        if tag:
+            self.response_text.insert(tk.END, text, tag)
+        else:
+            self.response_text.insert(tk.END, text)
+        self.response_text.see(tk.END)
+        self.response_text.config(state=tk.DISABLED)
     
-    def _on_query_finished(self, retrieved_chunks: list):
-        """Handle query completion."""
-        self.response_display.append("\n\n" + "─" * 70 + "\n")
-        self.response_display.append("📚 SOURCE CITATIONS:\n")
-        self.response_display.append("─" * 70 + "\n")
+    def _append_citations(self, retrieved_chunks: List[dict]):
+        """Append citations to response."""
+        self._append_response("\n\n" + "="*70 + "\n")
+        self._append_response("📚 SOURCE CITATIONS:\n", tag="citation")
+        self._append_response("="*70 + "\n")
         
         for idx, chunk in enumerate(retrieved_chunks, start=1):
             pdf_name = chunk.get('pdf_name', 'Unknown')
             page = chunk.get('page', '?')
-            score = chunk.get('score', 0.0)
-            self.response_display.append(f"  [{idx}] {pdf_name}, Page {page} (score: {score:.3f})\n")
+            citation = f"  [{idx}] {pdf_name}, Page {page}\n"
+            self._append_response(citation, tag="citation")
         
-        self.response_display.append("─" * 70 + "\n")
-        self.ask_btn.setEnabled(True)
+        self._append_response("="*70 + "\n")
     
-    def _on_query_error(self, error: str):
-        """Handle query error."""
-        self.response_display.append(f"\n❌ Error: {error}\n")
-        
-        if "api_key" in error.lower():
-            self.response_display.append("\n⚠️ Poe API key not set or invalid.\n")
-            self.response_display.append("Set it with: $env:POE_API_KEY = 'your-api-key'\n")
-        
-        self.ask_btn.setEnabled(True)
+    def _clear_response(self):
+        """Clear response text area."""
+        self.response_text.config(state=tk.NORMAL)
+        self.response_text.delete(1.0, tk.END)
+        self.response_text.config(state=tk.DISABLED)
+    
+    def _on_query_complete(self):
+        """Callback when query processing is complete."""
+        self.is_processing = False
+        self.btn_submit.config(state=tk.NORMAL)
+        self._update_status("Ready")
+    
+    def _update_status(self, message: str):
+        """Update status bar message."""
+        self.status_label.config(text=message)
+
+
+def create_app():
+    """Create and return the Tkinter application."""
+    root = tk.Tk()
+    app = RAGMainWindow(root)
+    return root

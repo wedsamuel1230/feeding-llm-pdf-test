@@ -49,7 +49,7 @@ powershell -ExecutionPolicy ByPass -c "irm https://astral.sh/uv/install.ps1 | ie
 
 ```powershell
 cd D:\projects\python  # Or your preferred location
-git clone https://github.com/yourusername/rag-pipeline.git
+git clone https://github.com/wedsamuel1230/rag-pipeline.git
 cd rag-pipeline
 ```
 
@@ -112,21 +112,7 @@ OSError: [WinError 1114] 動態連結程式庫 (DLL) 初始化例行程序失敗
 **Solution:**
 Install Visual C++ Redistributable (see Prerequisites above).
 
-### Issue 2: PyQt5 Version Error
-
-**Symptom:**
-```
-error: Distribution `pyqt5-qt5==5.15.17` can't be installed because it doesn't have a wheel for Windows
-```
-
-**Solution:**
-This is already fixed in `pyproject.toml` (pinned to 5.15.11 and pyqt5-qt5==5.15.2). If you still see this:
-```powershell
-# Manually install the working version
-uv pip install pyqt5==5.15.11 pyqt5-qt5==5.15.2
-```
-
-### Issue 3: Execution Policy Error
+### Issue 2: Execution Policy Error
 
 **Symptom:**
 ```
@@ -139,7 +125,7 @@ uv pip install pyqt5==5.15.11 pyqt5-qt5==5.15.2
 Set-ExecutionPolicy -ExecutionPolicy RemoteSigned -Scope CurrentUser
 ```
 
-### Issue 4: Path Too Long
+### Issue 3: Path Too Long
 
 **Symptom:**
 ```
@@ -157,12 +143,12 @@ Or move the project to a shorter path (e.g., `C:\Projects\rag-pipeline`).
 
 ## 🎨 GUI Features on Windows
 
-The PyQt5 GUI provides a native Windows look and feel:
+The Tkinter GUI provides a native Windows look and feel:
 
-- **Drag-and-drop**: Drag PDF files directly onto the file list
+- **File picker**: Standard Windows file selection dialog
 - **Model selection**: Dropdown with 12+ LLM models
 - **Streaming responses**: Real-time answer updates
-- **Native dialogs**: Windows file picker and message boxes
+- **Native widgets**: Windows-native buttons, labels, and text areas
 
 ## 🔧 Performance Tips
 
@@ -247,11 +233,11 @@ $env:HTTP_PROXY = "http://username:password@proxy.company.com:8080"
 
 - [uv Documentation](https://docs.astral.sh/uv)
 - [PyTorch Windows FAQ](https://pytorch.org/get-started/locally/)
-- [PyQt5 on Windows](https://www.riverbankcomputing.com/software/pyqt/)
+- [Tkinter Documentation](https://docs.python.org/3/library/tkinter.html)
 
 ---
 
-**Need help?** Open an issue on [GitHub Issues](https://github.com/yourusername/rag-pipeline/issues) with:
+**Need help?** Open an issue on [GitHub Issues](https://github.com/wedsamuel1230/rag-pipeline/issues) with:
 - Your Windows version (`winver`)
 - Python version (`python --version`)
 - Error message (full traceback)

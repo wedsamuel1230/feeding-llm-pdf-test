@@ -36,7 +36,7 @@ def initialize_clients():
 def load_pdfs(pdf_paths: List[str] = None) -> List[dict]:
     """Load and chunk PDFs."""
     if pdf_paths is None:
-        pdf_paths = ["test-pdf.pdf"]
+        pdf_paths = ["./tests/test-pdf.pdf"]
     
     print(f"📄 Loading {len(pdf_paths)} PDF(s)...")
     chunks = chunk_multiple_pdfs(pdf_paths)

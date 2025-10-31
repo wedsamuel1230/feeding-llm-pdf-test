@@ -1,6 +1,5 @@
-"""GUI package for RAG pipeline."""
+"""GUI module for RAG pipeline."""
 
-from .main_window import RAGMainWindow
-from .widgets import DropZone
+from .main_window import RAGMainWindow, create_app
 
-__all__ = ['RAGMainWindow', 'DropZone']
+__all__ = ["RAGMainWindow", "create_app"]

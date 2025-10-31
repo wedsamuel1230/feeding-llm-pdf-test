@@ -2,21 +2,13 @@
 """GUI entry point for RAG pipeline."""
 
 import sys
-from PyQt5.QtWidgets import QApplication
-
-from src.gui import RAGMainWindow
+from src.gui import create_app
 
 
 def main():
     """Launch GUI application."""
-    app = QApplication(sys.argv)
-    app.setApplicationName("Advanced RAG Pipeline")
-    app.setOrganizationName("RAG System")
-    
-    window = RAGMainWindow()
-    window.show()
-    
-    sys.exit(app.exec_())
+    root = create_app()
+    root.mainloop()
 
 
 if __name__ == "__main__":

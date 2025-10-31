@@ -229,7 +229,7 @@ When adding features, update:
 
 ### Before Submitting
 
-1. Check [existing issues](https://github.com/yourusername/rag-pipeline/issues)
+1. Check [existing issues](https://github.com/wedsamuel1230/rag-pipeline/issues)
 2. Try the latest version
 3. Gather debug information
 

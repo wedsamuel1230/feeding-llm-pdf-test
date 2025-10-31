@@ -4,7 +4,7 @@
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 [![Code style: black](https://img.shields.io/badge/code%20style-black-000000.svg)](https://github.com/psf/black)
 
-A production-ready **Retrieval-Augmented Generation (RAG)** system with a professional PyQt5 GUI for intelligent PDF document Q&A. Features semantic search, cross-encoder reranking, streaming responses, and support for multiple LLM models via Poe API.
+A production-ready **Retrieval-Augmented Generation (RAG)** system with a clean Tkinter GUI for intelligent PDF document Q&A. Features semantic search, cross-encoder reranking, streaming responses, and support for multiple LLM models via Poe API.
 
 ![RAG Pipeline Demo](docs/demo.gif)
 
@@ -20,14 +20,14 @@ A production-ready **Retrieval-Augmented Generation (RAG)** system with a profes
 - **⚡ Streaming Responses**: Real-time token-by-token output
 - **💾 Intelligent Caching**: Persistent embedding cache (3-5x speedup on repeat queries)
 - **📚 Multi-PDF Support**: Process and query multiple documents simultaneously
-- **🎨 Professional GUI**: Modern PyQt5 interface with dark mode support
+- **🎨 Cross-Platform GUI**: Clean Tkinter interface (Python stdlib, no external dependencies)
 
 ### 🛠️ Technical Stack
 - **Embeddings**: `all-MiniLM-L6-v2` (local, fast, 384-dim)
 - **Reranker**: `ms-marco-MiniLM-L-12-v2` (cross-encoder)
 - **LLM API**: Poe API (OpenAI-compatible)
 - **PDF Processing**: pdfplumber with intelligent chunking
-- **GUI**: PyQt5 with custom drag-drop widgets
+- **GUI**: Tkinter (Python stdlib, Windows-friendly)
 
 ---
 
@@ -36,7 +36,7 @@ A production-ready **Retrieval-Augmented Generation (RAG)** system with a profes
 ```mermaid
 flowchart TB
     subgraph "User Interface"
-        GUI["PyQt5 GUI<br/>Drag & Drop PDFs<br/>Model Selection"]
+        GUI["Tkinter GUI<br/>File Picker<br/>Model Selection"]
         CLI["CLI Interface<br/>Command Line<br/>Batch Processing"]
     end
     
@@ -109,7 +109,7 @@ flowchart TB
 # Download: https://aka.ms/vs/17/release/vc_redist.x64.exe
 
 # Clone the repository
-git clone https://github.com/yourusername/rag-pipeline.git
+git clone https://github.com/wedsamuel1230/rag-pipeline.git
 cd rag-pipeline
 
 # Install uv if not already installed
@@ -122,7 +122,7 @@ uv sync
 ### Option 2: Using `pip`
 
 ```powershell
-git clone https://github.com/yourusername/rag-pipeline.git
+git clone https://github.com/wedsamuel1230/rag-pipeline.git
 cd rag-pipeline
 pip install -e .
 ```
@@ -473,15 +473,6 @@ notepad $PROFILE
 # Add: $env:POE_API_KEY = "your-key"
 ```
 
-### Issue: "Import PyQt5 could not be resolved"
-
-**Solution:**
-```powershell
-pip install PyQt5
-# Or with uv:
-uv pip install PyQt5
-```
-
 ### Issue: Slow first run
 
 **Expected**: First run downloads ML models (~100MB). Subsequent runs use cache and are 3-5x faster.
@@ -518,17 +509,17 @@ This project is licensed under the MIT License - see the [LICENSE](LICENSE) file
 
 - **Sentence Transformers**: For excellent embedding models
 - **OpenAI/Poe**: For powerful LLM APIs
-- **PyQt5**: For robust GUI framework
+- **Tkinter**: Python's built-in GUI framework
 - **pdfplumber**: For reliable PDF text extraction
 
 ---
 
 ## 📞 Contact
 
-- **Author**: Your Name
-- **Email**: your.email@example.com
-- **GitHub**: [@yourusername](https://github.com/yourusername)
-- **Issues**: [GitHub Issues](https://github.com/yourusername/rag-pipeline/issues)
+- **Author**: wed
+- **Email**: wedsamuel1230@gmail.com
+- **GitHub**: [@wedsamuel1230](https://github.com/wedsamuel1230)
+- **Issues**: [GitHub Issues](https://github.com/wedsamuel1230/rag-pipeline/issues)
 
 ---
 
@@ -536,7 +527,7 @@ This project is licensed under the MIT License - see the [LICENSE](LICENSE) file
 
 If you find this project useful, please consider giving it a star! ⭐
 
-[![Star History Chart](https://api.star-history.com/svg?repos=yourusername/rag-pipeline&type=Date)](https://star-history.com/#yourusername/rag-pipeline&Date)
+[![Star History Chart](https://api.star-history.com/svg?repos=wedsamuel1230/rag-pipeline&type=Date)](https://star-history.com/#wedsamuel1230/rag-pipeline&Date)
 
 ---
 
@@ -544,6 +535,6 @@ If you find this project useful, please consider giving it a star! ⭐
 
 **Made with ❤️ by the RAG Pipeline Team**
 
-[Report Bug](https://github.com/yourusername/rag-pipeline/issues) · [Request Feature](https://github.com/yourusername/rag-pipeline/issues) · [Documentation](https://github.com/yourusername/rag-pipeline/wiki)
+[Report Bug](https://github.com/wedsamuel1230/rag-pipeline/issues) · [Request Feature](https://github.com/wedsamuel1230/rag-pipeline/issues) · [Documentation](https://github.com/wedsamuel1230 /rag-pipeline/wiki)
 
 </div>
