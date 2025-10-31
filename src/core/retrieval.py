@@ -132,21 +132,28 @@ def format_context_for_prompt(retrieved_chunks: List[Dict]) -> str:
 
 
 def build_rag_prompt(user_query: str, retrieved_chunks: List[Dict]) -> str:
-    """Build final prompt with context for LLM."""
+    """Build final prompt with context for LLM.
+    
+    If chunks are provided, uses RAG mode with PDF context.
+    If empty, returns query for general knowledge mode.
+    """
+    if not retrieved_chunks:
+        # General knowledge mode - no PDF context
+        return f"{user_query}"
+    
+    # RAG mode - include PDF context
     context = format_context_for_prompt(retrieved_chunks)
     
-    prompt = f"""You are an AI assistant that answers questions based on provided PDF content.
-Use the retrieved PDF context below to answer the user's question.
-Always cite the source (PDF name, page number) when referencing the documents.
-If the answer is not in the provided context, say so clearly.
+    prompt = f"""You are an AI assistant helping with questions. When PDF documents are provided, use them as your primary source.
 
+Retrieved PDF Context:
 {context}
 
 ---
 
 User Question: {user_query}
 
-Please provide a detailed answer with specific citations."""
+Please provide a detailed answer based on the context provided above."""
     return prompt
 
 

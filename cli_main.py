@@ -90,14 +90,14 @@ def query_poe_streaming(
             messages=[
                 {
                     "role": "system",
-                    "content": "You are a helpful AI assistant that answers questions about PDF documents with accurate citations."
+                    "content": "You are a helpful AI assistant. When PDF documents are provided, use them to answer questions. Otherwise, use your general knowledge."
                 },
                 {
                     "role": "user",
                     "content": prompt
                 }
             ],
-            max_tokens=2048,
+            max_tokens=config.MAX_TOKENS,
             stream=config.STREAM_ENABLED,
         ) as response:
             # Stream and collect response
@@ -140,25 +140,13 @@ def main(pdf_paths: List[str] = None, query: str = None):
     # Retrieve with semantic search + reranking
     retrieved = retrieve_documents(query, chunks, embedding_cache, reranker)
     
-    if not retrieved:
-        print("⚠️  No relevant documents found.")
-        return
-    
-    # Build prompt with retrieved chunks
+    # Build prompt - works with or without retrieved chunks
     prompt = build_rag_prompt(query, retrieved)
     
     # Query Poe with streaming
     response = query_poe_streaming(poe_client, prompt)
     
-    # Display citations
-    print("=" * 70)
-    print("📚 SOURCE CITATIONS:")
-    print("=" * 70)
-    for idx, chunk in enumerate(retrieved, start=1):
-        pdf_name = chunk.get('pdf_name', 'Unknown')
-        page = chunk.get('page', '?')
-        print(f"  [{idx}] {pdf_name}, Page {page}")
-    print("=" * 70 + "\n")
+    print("\n")  # Add spacing after response
 
 
 if __name__ == "__main__":

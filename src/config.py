@@ -37,6 +37,9 @@ POE_AVAILABLE_MODELS = [
     "DeepSeek-R1",                  # Open-source reasoning
 ]
 
+# LLM Generation Configuration
+MAX_TOKENS = 2048  # Default max tokens for LLM response (range: 512-8192)
+
 # Embedding Configuration
 EMBEDDING_MODEL = "all-MiniLM-L6-v2"  # Fast, local Sentence Transformer
 EMBEDDING_DIM = 384

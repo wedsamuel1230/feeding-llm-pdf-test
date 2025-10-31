@@ -13,7 +13,7 @@ A production-ready **Retrieval-Augmented Generation (RAG)** system with a clean 
 ## ✨ Key Features
 
 ### 🎯 Core Capabilities
-- **🤖 Multi-Model Support**: Choose from 20+ LLMs (GPT-5, Claude 4.5, Gemini 2.5, Grok-4, etc.)
+- **🤖 Multi-Model Support**: Choose from 21 LLMs across 5 providers (GPT-5, Claude 4.5, Gemini 2.5, Grok-4, DeepSeek, Qwen, etc.)
 - **📄 Drag-and-Drop PDF Upload**: Intuitive GUI with file management
 - **🔍 Semantic Search**: Sentence Transformers embeddings (384-dim, local inference)
 - **🎯 Two-Stage Retrieval**: Initial semantic search → Cross-encoder reranking
@@ -55,7 +55,7 @@ flowchart TB
     end
     
     subgraph "LLM Generation"
-        POE["Poe API Client<br/>20+ Models<br/>Streaming Support"]
+        POE["Poe API Client<br/>21 Models (5 Providers)<br/>Streaming Support"]
         PROMPT["Prompt Builder<br/>Context + Citations"]
         
         PROMPT --> POE
@@ -251,9 +251,9 @@ Based on the PDF documents, the main points are:
 
 ### Model Selection (GUI)
 
-Available models in dropdown (20 models across 5 providers, updated 2025-10-31):
+Available models in dropdown (21 models across 5 providers, updated 2025-10-31):
 
-**Poe**
+**Poe (1 model)**
 - `Assistant` - General-purpose router (default)
 
 **OpenAI (8 models)**
@@ -280,15 +280,34 @@ Available models in dropdown (20 models across 5 providers, updated 2025-10-31):
 - `Grok-4-Fast-Non-Reasoning` - Fast content generation
 - `Grok-Code-Fast-1` - High-performance coding
 
-**Others (3 models)**
+**Others (4 models)**
 - `Qwen-3-Next-80B-Think` - Next-gen with thinking mode enabled
 - `Qwen3-Next-80B` - Next-gen foundation model
 - `DeepSeek-V3.2-Exp` - Experimental model
 - `DeepSeek-R1` - Top open-source reasoning LLM
 
+### Token Configuration
+
+Control the maximum tokens for LLM responses:
+
+**GUI:** Adjust the "Max Tokens" spinbox in the Model Selection panel (range: 512-8192, default: 2048)
+- Lower values (512-1024): Shorter, faster responses
+- Default (2048): Balanced length and quality
+- Higher values (4096-8192): Longer, more detailed responses
+
+**CLI/Config:** Edit `MAX_TOKENS` in `src/config.py` to change the default:
+```python
+MAX_TOKENS = 2048  # Adjust as needed (512-8192)
+```
+
+**Note:** Higher token limits increase API costs and response time. Most models support up to 4096-8192 output tokens.
+
 ### Advanced Configuration (`src/config.py`)
 
 ```python
+# LLM Generation
+MAX_TOKENS = 2048          # Max tokens for LLM response
+
 # RAG Parameters
 CHUNK_SIZE = 500           # Words per chunk
 CHUNK_OVERLAP = 50         # Overlap for context continuity

@@ -33,6 +33,7 @@ class RAGMainWindow:
         self.embedding_cache: Optional[EmbeddingCache] = None
         self.reranker: Optional[Reranker] = None
         self.is_processing = False
+        self.token_var = tk.StringVar(value=str(config.MAX_TOKENS))
         
         self._initialize_components()
         self._build_ui()
@@ -105,6 +106,24 @@ class RAGMainWindow:
             width=40
         )
         self.model_combo.grid(row=0, column=1, sticky=(tk.W, tk.E))
+        
+        # Token limit configuration
+        ttk.Label(model_frame, text="Max Tokens:").grid(row=1, column=0, sticky=tk.W, padx=(0, 10), pady=(10, 0))
+        
+        token_control_frame = ttk.Frame(model_frame)
+        token_control_frame.grid(row=1, column=1, sticky=tk.W, pady=(10, 0))
+        
+        self.token_spinbox = ttk.Spinbox(
+            token_control_frame,
+            from_=512,
+            to=8192,
+            increment=256,
+            textvariable=self.token_var,
+            width=10
+        )
+        self.token_spinbox.pack(side=tk.LEFT, padx=(0, 10))
+        
+        ttk.Label(token_control_frame, text="(512-8192, default: 2048)", foreground="gray").pack(side=tk.LEFT)
         
         query_frame = ttk.LabelFrame(main_frame, text="❓ Query", padding="10")
         query_frame.grid(row=2, column=0, sticky=(tk.W, tk.E), pady=(0, 10))
@@ -202,9 +221,10 @@ class RAGMainWindow:
             messagebox.showwarning("Empty Query", "Please enter a query.")
             return
         
-        if not self.chunks:
-            messagebox.showwarning("No PDFs", "Please add PDF files first.")
-            return
+        # Allow queries even without PDFs (general knowledge mode)
+        # if not self.chunks:
+        #     messagebox.showwarning("No PDFs", "Please add PDF files first.")
+        #     return
         
         if not self.poe_client:
             messagebox.showerror("API Error", "Poe API client not initialized. Check POE_API_KEY.")
@@ -217,23 +237,25 @@ class RAGMainWindow:
         self.is_processing = True
         self.btn_submit.config(state=tk.DISABLED)
         self._clear_response()
-        self._update_status("Retrieving documents...")
         
         def query_task():
             try:
-                retrieved = retrieve_with_reranking(
-                    query,
-                    self.chunks,
-                    self.embedding_cache,
-                    self.reranker,
-                    top_k=config.FINAL_TOP_K
-                )
+                # Only retrieve documents if PDFs are loaded
+                if self.chunks:
+                    self.root.after(0, lambda: self._update_status("Retrieving documents..."))
+                    retrieved = retrieve_with_reranking(
+                        query,
+                        self.chunks,
+                        self.embedding_cache,
+                        self.reranker,
+                        top_k=config.FINAL_TOP_K
+                    )
+                else:
+                    # No PDFs loaded - use general knowledge mode
+                    self.root.after(0, lambda: self._update_status("Querying with general knowledge..."))
+                    retrieved = []
                 
-                if not retrieved:
-                    self.root.after(0, lambda: self._append_response("⚠️  No relevant documents found.", tag="error"))
-                    self.root.after(0, self._on_query_complete)
-                    return
-                
+                # Build prompt - works with or without retrieved chunks
                 prompt = build_rag_prompt(query, retrieved)
                 self.root.after(0, lambda: self._update_status("Querying Poe API..."))
                 
@@ -252,10 +274,10 @@ class RAGMainWindow:
             with self.poe_client.chat.completions.create(
                 model=model,
                 messages=[
-                    {"role": "system", "content": "You are a helpful AI assistant that answers questions about PDF documents with accurate citations."},
+                    {"role": "system", "content": "You are a helpful AI assistant. When PDF documents are provided, use them to answer questions. Otherwise, use your general knowledge."},
                     {"role": "user", "content": prompt}
                 ],
-                max_tokens=2048,
+                max_tokens=int(self.token_var.get()),
                 stream=config.STREAM_ENABLED,
             ) as response:
                 for chunk in response:
@@ -263,7 +285,6 @@ class RAGMainWindow:
                         content = chunk.choices[0].delta.content
                         self.root.after(0, lambda c=content: self._append_response(c))
                 
-                self.root.after(0, lambda: self._append_citations(retrieved_chunks))
                 self.root.after(0, self._on_query_complete)
                 
         except Exception as e:
