@@ -6,8 +6,6 @@
 
 A production-ready **Retrieval-Augmented Generation (RAG)** system with a clean Tkinter GUI for intelligent PDF document Q&A. Features semantic search, cross-encoder reranking, streaming responses, and support for multiple LLM models via Poe API.
 
-![RAG Pipeline Demo](docs/demo.gif)
-
 ---
 
 ## ✨ Key Features
