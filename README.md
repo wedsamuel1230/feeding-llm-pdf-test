@@ -6,6 +6,10 @@
 
 A production-ready **Retrieval-Augmented Generation (RAG)** system with a clean Tkinter GUI for intelligent PDF document Q&A. Features semantic search, cross-encoder reranking, streaming responses, and support for multiple LLM models via Poe API.
 
+<callout icon="💡" color="blue_bg">
+	**Key Highlight:** Ask questions <span color="green">even without PDFs loaded</span> — seamlessly switch between PDF-based and general knowledge modes!
+</callout>
+
 ![RAG Pipeline Demo](docs/demo.gif)
 
 ---
@@ -13,13 +17,15 @@ A production-ready **Retrieval-Augmented Generation (RAG)** system with a clean 
 ## ✨ Key Features
 
 ### 🎯 Core Capabilities
-- **🤖 Multi-Model Support**: Choose from 21 LLMs across 5 providers (GPT-5, Claude 4.5, Gemini 2.5, Grok-4, DeepSeek, Qwen, etc.)
-- **🔍 Semantic Search**: Sentence Transformers embeddings (384-dim, local inference)
+- **🤖 Multi-Model Support**: Choose from <span color="blue">21 LLMs across 5 providers</span> (GPT-5, Claude 4.5, Gemini 2.5, Grok-4, DeepSeek, Qwen, etc.)
+- **� Drag-and-Drop PDF Upload**: Intuitive GUI with file management
+- **�🔍 Semantic Search**: <span color="green">Sentence Transformers</span> embeddings (384-dim, local inference)
 - **🎯 Two-Stage Retrieval**: Initial semantic search → Cross-encoder reranking
 - **⚡ Streaming Responses**: Real-time token-by-token output
 - **💾 Intelligent Caching**: Persistent embedding cache (3-5x speedup on repeat queries)
 - **📚 Multi-PDF Support**: Process and query multiple documents simultaneously
 - **🎨 Cross-Platform GUI**: Clean Tkinter interface (Python stdlib, no external dependencies)
+- **🧠 General Knowledge Mode**: Ask questions <span color="orange">without PDFs</span> using LLM knowledge
 
 ### 🛠️ Technical Stack
 - **Embeddings**: `all-MiniLM-L6-v2` (local, fast, 384-dim)
@@ -141,6 +147,10 @@ export POE_API_KEY="your-api-key-here"
 
 ## ⚡ Quick Start
 
+<callout icon="⚡" color="yellow_bg">
+	Get started in <span color="green">**3 steps**</span>: Install → Set API key → Launch GUI!
+</callout>
+
 ### Launch GUI
 
 ```powershell
@@ -162,6 +172,10 @@ This will:
 1. Load `test-pdf.pdf` (if present)
 2. Generate embeddings (cached for next time)
 3. Run a demo query
+
+<callout icon="💡" color="blue">
+	**Tip:** No PDF files? No problem! The system now works in <span underline="true">general knowledge mode</span> automatically. Just ask any question!
+</callout>
 4. Stream the response with citations
 
 ---
@@ -172,10 +186,7 @@ This will:
 
 #### 1. **Configure Model**
    - Select your preferred LLM from the dropdown (default: `Assistant`)
-<<<<<<< HEAD
    - Check API key status indicator (✅ green = ready)
-=======
->>>>>>> 129f7a5d21f9ce6d8de7854cc6f68d0e1a62a287
 
 #### 2. **Upload PDFs**
    - **Drag & Drop**: Drag PDF files into the drop zone
@@ -245,53 +256,79 @@ Overall, the documents aim to provide insights into personal and professional de
 
 ## ⚙️ Configuration
 
+<callout icon="⚙️" color="purple_bg">
+	All models and settings can be updated in <span color="green">`src/config.py`</span> or via the GUI at runtime
+</callout>
+
 ### Model Selection (GUI)
 
-Available models in dropdown (21 models across 5 providers, updated 2025-10-31):
+Available models in dropdown (<span color="blue">21 models across 5 providers</span>, updated 2025-10-31):
 
-**Poe (1 model)**
-- `Assistant` - General-purpose router (default)
+▶### Poe (1 model)
+	- `Assistant` - General-purpose router (default)
 
-**OpenAI (8 models)**
-- `GPT-5-Chat` - Latest non-reasoning GPT-5 snapshot
-- `GPT-5` - Flagship with improved coding skills
-- `GPT-5-Pro` - Enhanced flagship model
-- `GPT-5-Codex` - Software engineering specialized
-- `GPT-4o` - Natural, engaging writing style
-- `GPT-5-mini` - Fast & affordable, beats GPT-4.1
-- `GPT-5-nano` - Extremely fast & cheap for summarization
-- `o3-pro` - Well-rounded, powerful across domains
+▶### OpenAI (8 models)
+	- `GPT-5-Chat` - Latest non-reasoning GPT-5 snapshot
+	- `GPT-5` - Flagship with improved coding skills
+	- `GPT-5-Pro` - Enhanced flagship model
+	- `GPT-5-Codex` - Software engineering specialized
+	- `GPT-4o` - Natural, engaging writing style
+	- `GPT-5-mini` - Fast & affordable, beats GPT-4.1
+	- `GPT-5-nano` - Extremely fast & cheap for summarization
+	- `o3-pro` - Well-rounded, powerful across domains
 
-**Anthropic (2 models)**
-- `Claude-Sonnet-4.5` - Major capability leap forward
-- `Claude-Haiku-4.5` - Fastest & most efficient
+▶### Anthropic (2 models)
+	- `Claude-Sonnet-4.5` - Major capability leap forward
+	- `Claude-Haiku-4.5` - Fastest & most efficient
 
-**Google (2 models)**
-- `Gemini-2.5-Pro` - Advanced frontier performance
-- `Gemini-2.5-Flash` - Built on 2.0 Flash foundation
+▶### Google (2 models)
+	- `Gemini-2.5-Pro` - Advanced frontier performance
+	- `Gemini-2.5-Flash` - Built on 2.0 Flash foundation
 
-**XAI (4 models)**
-- `Grok-4` - xAI's most intelligent language model
-- `Grok-4-Fast-Reasoning` - Logic & complex problem-solving
-- `Grok-4-Fast-Non-Reasoning` - Fast content generation
-- `Grok-Code-Fast-1` - High-performance coding
+▶### XAI (4 models)
+	- `Grok-4` - xAI's most intelligent language model
+	- `Grok-4-Fast-Reasoning` - Logic & complex problem-solving
+	- `Grok-4-Fast-Non-Reasoning` - Fast content generation
+	- `Grok-Code-Fast-1` - High-performance coding
 
-**Others (4 models)**
-- `Qwen-3-Next-80B-Think` - Next-gen with thinking mode enabled
-- `Qwen3-Next-80B` - Next-gen foundation model
-- `DeepSeek-V3.2-Exp` - Experimental model
-- `DeepSeek-R1` - Top open-source reasoning LLM
+▶### Others (4 models)
+	- `Qwen-3-Next-80B-Think` - Next-gen with thinking mode enabled
+	- `Qwen3-Next-80B` - Next-gen foundation model
+	- `DeepSeek-V3.2-Exp` - Experimental model
+	- `DeepSeek-R1` - Top open-source reasoning LLM
 
 ### Token Configuration
 
-Control the maximum tokens for LLM responses:
+<table header-row="true">
+	<colgroup>
+		<col color="blue_bg"/>
+		<col/>
+		<col color="green_bg"/>
+	</colgroup>
+	<tr>
+		<td>**Range**</td>
+		<td>**Use Case**</td>
+		<td>**Speed**</td>
+	</tr>
+	<tr>
+		<td>512-1024</td>
+		<td>Quick summaries, short answers</td>
+		<td>🚀 Fastest</td>
+	</tr>
+	<tr>
+		<td>2048 (default)</td>
+		<td>Balanced: quality + speed</td>
+		<td>⚡ Fast</td>
+	</tr>
+	<tr>
+		<td>4096-8192</td>
+		<td>Detailed responses, research</td>
+		<td>⏱️ Slower</td>
+	</tr>
+</table>
 
-**GUI:** Adjust the "Max Tokens" spinbox in the Model Selection panel (range: 512-8192, default: 2048)
-- Lower values (512-1024): Shorter, faster responses
-- Default (2048): Balanced length and quality
-- Higher values (4096-8192): Longer, more detailed responses
-
-**CLI/Config:** Edit `MAX_TOKENS` in `src/config.py` to change the default:
+**GUI:** Adjust the "Max Tokens" spinbox in the Model Selection panel
+**CLI/Config:** Edit `MAX_TOKENS` in `src/config.py`:
 ```python
 MAX_TOKENS = 2048  # Adjust as needed (512-8192)
 ```
@@ -485,32 +522,74 @@ make html
 
 ---
 
+## 🧠 Query Modes
+
+<callout icon="🎯" color="green_bg">
+	The system intelligently switches between two modes based on what you provide
+</callout>
+
+<table header-row="true" header-column="true">
+	<colgroup>
+		<col color="blue"/>
+		<col color="green"/>
+		<col color="purple"/>
+	</colgroup>
+	<tr>
+		<td>**Mode**</td>
+		<td>**Trigger**</td>
+		<td>**Behavior**</td>
+	</tr>
+	<tr>
+		<td>📄 **PDF Mode**</td>
+		<td>PDFs loaded + Relevant chunks found</td>
+		<td>Uses retrieved PDF context to answer questions</td>
+	</tr>
+	<tr>
+		<td>🧠 **General Mode**</td>
+		<td>No PDFs OR No relevant chunks</td>
+		<td>Uses LLM's general knowledge to answer</td>
+	</tr>
+</table>
+
+**Example Scenarios:**
+- ✅ Load `research.pdf` + Ask "What does this paper conclude?" → PDF Mode
+- ✅ Load `budget.pdf` + Ask "What is Python?" → General Mode (question unrelated)
+- ✅ Don't load any PDFs + Ask "Tell me about AI" → General Mode
+
+<callout icon="💡" color="blue">
+	No more blocking errors! The system gracefully handles both PDF and non-PDF queries.
+</callout>
+
+---
+
 ## 🐛 Troubleshooting
 
-### Issue: Windows DLL Error (PyTorch c10.dll)
+▶### Issue: Windows DLL Error (PyTorch c10.dll)
 
-**Error Message:**
-```
-OSError: [WinError 1114] Error loading "c10.dll" or one of its dependencies.
-```
+	**Error Message:**
+	```
+	OSError: [WinError 1114] Error loading "c10.dll" or one of its dependencies.
+	```
 
-**Solution:**
-Install Microsoft Visual C++ Redistributable:
-1. Download: [vc_redist.x64.exe](https://aka.ms/vs/17/release/vc_redist.x64.exe)
-2. Run the installer
-3. Restart your terminal
-4. Try running the application again
+	**Solution:**
+	Install Microsoft Visual C++ Redistributable:
+	1. Download: [vc_redist.x64.exe](https://aka.ms/vs/17/release/vc_redist.x64.exe)
+	2. Run the installer
+	3. Restart your terminal
+	4. Try running the application again
 
-This is required for PyTorch to work on Windows.
+	<callout icon="ℹ️" color="blue">
+		This is required for PyTorch to work on Windows.
+	</callout>
 
-### Issue: "POE_API_KEY not set"
+▶### Issue: "POE_API_KEY not set"
 
-**Solution:**
-```powershell
-$env:POE_API_KEY = "your-key"
-```
+	**Solution:**
+	```powershell
+	$env:POE_API_KEY = "your-key"
+	```
 
-Make it permanent by adding to PowerShell profile:
+	Make it permanent by adding to PowerShell profile:
 ```powershell
 notepad $PROFILE
 # Add: $env:POE_API_KEY = "your-key"
@@ -545,6 +624,18 @@ Contributions are welcome! Please see [CONTRIBUTING.md](CONTRIBUTING.md) for gui
 ## 📄 License
 
 This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
+
+---
+
+## ✨ Recent Updates (Nov 2025)
+
+<callout icon="🎉" color="green_bg">
+	**New Features Added:**
+	- <span color="green">✨ General Knowledge Mode</span> — Ask questions without loading PDFs
+	- <span color="orange">📊 Token Configuration</span> — Control response length (512-8192 tokens)
+	- <span color="blue">🎨 Enhanced Models List</span> — Now supporting 21 models across 5 providers
+	- <span color="purple">🧠 Flexible Query Routing</span> — Automatically switches between PDF and general knowledge modes
+</callout>
 
 ---
 
